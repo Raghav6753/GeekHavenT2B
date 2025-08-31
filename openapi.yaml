@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: GeekHaven Marketplace API
+  version: 1.0.0
+  description: API for the GeekHaven reselling marketplace. Includes assignment-specific behavior: admin JWTs signed with ASSIGNMENT_SEED, checkout X-Signature HMAC header, idempotency and rate limiting.
+servers:
+  - url: http://localhost:5000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+    CheckoutItem:
+      type: object
+      properties:
+        productId:
+          type: string
+        price:
+          type: number
+        qty:
+          type: integer
+    CheckoutRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutItem'
+        paymentMethod:
+          type: string
+        user:
+          type: object
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        sku:
+          type: string
+        subtotal:
+          type: number
+        fee:
+          type: number
+        total:
+          type: number
+
+paths:
+  /api/products:
+    get:
+      summary: List products
+      responses:
+        '200':
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    post:
+      summary: Create product (multipart or JSON)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Created
+
+  /api/checkout:
+    post:
+      summary: Place an order (rate-limited, idempotent)
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+          description: Idempotency key for retries (cached 5 minutes)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '200':
+          description: Successful checkout (contains X-Signature header signed with ASSIGNMENT_SEED)
+          headers:
+            X-Signature:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '429':
+          description: Rate limit exceeded
+
+  /logs/recent:
+    get:
+      summary: Recent redacted request logs
+      responses:
+        '200':
+          description: Recent logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ts:
+                      type: string
+                    method:
+                      type: string
+                    path:
+                      type: string
+
+  /{rollno}/healthz:
+    get:
+      summary: Health check for a roll number (set ROLLNO env var)
+      parameters:
+        - in: path
+          name: rollno
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Health OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /api/auth/signup:
+    post:
+      summary: Register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Signed up
+
+  /api/auth/signin:
+    post:
+      summary: Sign in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Signed in
+
+security:
+  - bearerAuth: []

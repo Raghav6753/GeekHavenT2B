@@ -1,0 +1,53 @@
+{
+  "info": {
+    "name": "GeekHaven API",
+    "_postman_id": "gh-geekhaven",
+    "description": "Postman collection for GeekHaven backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Signup",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"email\": \"admin@example.com\", \"password\": \"pass123\" }"
+        },
+        "url": { "raw": "http://localhost:5000/api/auth/signup", "protocol": "http", "host": [ "localhost" ], "port": "5000", "path": [ "api", "auth", "signup" ] }
+      }
+    },
+    {
+      "name": "Signin",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{ \"email\": \"admin@example.com\", \"password\": \"pass123\" }" },
+        "url": { "raw": "http://localhost:5000/api/auth/signin", "protocol": "http", "host": [ "localhost" ], "port": "5000", "path": [ "api", "auth", "signin" ] }
+      }
+    },
+    {
+      "name": "List Products",
+      "request": { "method": "GET", "url": { "raw": "http://localhost:5000/api/products", "protocol": "http", "host": [ "localhost" ], "port": "5000", "path": [ "api", "products" ] } }
+    },
+    {
+      "name": "Checkout",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Idempotency-Key", "value": "test-123" } ],
+        "body": { "mode": "raw", "raw": "{ \"items\": [{ \"productId\": \"abc\", \"price\": 100, \"qty\": 2 }], \"paymentMethod\": \"mock\" }" },
+        "url": { "raw": "http://localhost:5000/api/checkout", "protocol": "http", "host": [ "localhost" ], "port": "5000", "path": [ "api", "checkout" ] }
+      }
+    },
+    {
+      "name": "Recent Logs",
+      "request": { "method": "GET", "url": { "raw": "http://localhost:5000/logs/recent", "protocol": "http", "host": [ "localhost" ], "port": "5000", "path": [ "logs", "recent" ] } }
+    }
+  ]
+}
