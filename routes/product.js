@@ -64,7 +64,19 @@ router.post('/', async (req, res) => {
 
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
+    const { q } = req.query;
+    let filter = {};
+    if (q) {
+      const regex = new RegExp(q, 'i'); // case-insensitive
+      filter = {
+        $or: [
+          { title: regex },
+          { description: regex },
+          { tags: regex }
+        ]
+      };
+    }
+    const products = await Product.find(filter);
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
